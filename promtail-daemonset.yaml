@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  namespace: logging
+spec:
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      labels:
+        app: promtail
+    spec:
+      serviceAccount: promtail
+      containers:
+        - name: promtail
+          image: grafana/promtail:2.9.0-arm64  # ARM64 compatible image
+          args:
+            - -config.file=/etc/promtail/promtail.yaml
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail
+            - name: run
+              mountPath: /run/promtail
+            - name: containers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: pods
+              mountPath: /var/log/pods
+              readOnly: true
+          ports:
+            - containerPort: 9080
+              name: http-metrics
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsUser: 0
+      volumes:
+        - name: config
+          configMap:
+            name: promtail-config
+        - name: run
+          hostPath:
+            path: /run/promtail
+        - name: containers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: pods
+          hostPath:
+            path: /var/log/pods

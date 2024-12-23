@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  serviceName: "loki"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:2.9.0-arm64  # ARM64 compatible image
+          args:
+            - -config.file=/etc/loki/loki.yaml
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          ports:
+            - containerPort: 3100
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki
+            - name: data
+              mountPath: /loki
+          securityContext:
+            fsGroup: 10001
+            runAsGroup: 10001
+            runAsNonRoot: true
+            runAsUser: 10001
+      volumes:
+        - name: config
+          configMap:
+            name: loki-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi  # Reduced storage size for Raspberry Pi
