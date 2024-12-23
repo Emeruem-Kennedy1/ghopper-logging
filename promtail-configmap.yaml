@@ -14,8 +14,8 @@ data:
 
     clients:
       - url: http://loki:3100/loki/api/v1/push
-        batch_wait: 1s
-        batch_size: 102400
+        batchsize: 102400
+        batchwait: 1s
 
     scrape_configs:
       - job_name: kubernetes-pods
@@ -23,25 +23,13 @@ data:
           - role: pod
         pipeline_stages:
           - docker: {}
-          - regex:
-              expression: '\\[GIN\\]\\s+(?P<timestamp>\\d{4}/\\d{2}/\\d{2} - \\d{2}:\\d{2}:\\d{2})\\s+\\|\\s+(?P<status>\\d{3})\\s+\\|\\s+(?P<latency>[\\d\\.]+\\w+)\\s+\\|\\s+(?P<client_ip>[\\d\\.]+)\\s+\\|\\s+(?P<method>\\w+)\\s+(?P<path>.*)'
-          - labels:
-              status:
-              method:
-              path:
         relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
-          - action: replace
-            source_labels:
-              - __meta_kubernetes_pod_node_name
-            target_label: instance
-          - action: labelmap
-            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
           - action: replace
             replacement: /var/log/pods/*$1/*.log
             separator: /
