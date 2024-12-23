@@ -15,7 +15,7 @@ spec:
       serviceAccount: promtail
       containers:
         - name: promtail
-          image: grafana/promtail:2.9.0-arm64  # ARM64 compatible image
+          image: grafana/promtail
           args:
             - -config.file=/etc/promtail/promtail.yaml
           resources:
