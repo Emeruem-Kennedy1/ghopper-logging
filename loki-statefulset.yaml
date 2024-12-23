@@ -14,9 +14,11 @@ spec:
       labels:
         app: loki
     spec:
+      securityContext:
+        fsGroup: 10001
       containers:
         - name: loki
-          image: grafana/loki:2.9.0-arm64  # ARM64 compatible image
+          image: grafana/loki:2.9.0-arm64
           args:
             - -config.file=/etc/loki/loki.yaml
           resources:
@@ -35,7 +37,6 @@ spec:
             - name: data
               mountPath: /loki
           securityContext:
-            fsGroup: 10001
             runAsGroup: 10001
             runAsNonRoot: true
             runAsUser: 10001
@@ -50,4 +51,4 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 5Gi  # Reduced storage size for Raspberry Pi
+            storage: 5Gi
