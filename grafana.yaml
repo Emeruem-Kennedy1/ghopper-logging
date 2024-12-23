@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: grafana
-          image: grafana/grafana:9.5.0-arm64  # ARM64 compatible image
+          image: grafana/grafana-arm64v8-linux:6.7.6
           resources:
             requests:
               cpu: 100m
